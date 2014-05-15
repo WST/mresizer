@@ -4,6 +4,8 @@
 #include <dirent.h>
 #include <string.h>
 
+char destination_filename[255];
+
 int main(int argc, char *argv[]) {
 
 	DIR *directory;
@@ -12,6 +14,7 @@ int main(int argc, char *argv[]) {
 	for(directory = opendir("."); (entry = readdir(directory)) != 0;) {
 		if(strcmp(entry->d_name, ".") == 0 || strcmp(entry->d_name, "..") == 0) continue;
 		if(strstr(entry->d_name, ".jpg") != entry->d_name + strlen(entry->d_name) - 4) continue;
+		if(strstr(entry->d_name, ".resized.jpg") == entry->d_name + strlen(entry->d_name) - 12) continue;
 
 		FILE *file = fopen(entry->d_name, "r");
 		gdImagePtr source = gdImageCreateFromJpeg(file);
@@ -26,7 +29,9 @@ int main(int argc, char *argv[]) {
 
 		gdImageCopyResampled(destination, source, 0, 0, 0, 0, destination_width, destination_height, source_width, source_height);
 
-		FILE *destination_file = fopen("dest.jpg", "w");
+		sprintf(destination_filename, "%s.resized.jpg", entry->d_name);
+
+		FILE *destination_file = fopen(destination_filename, "w");
 		fseek(destination_file, 0, SEEK_SET);
 		gdImageJpeg(destination, destination_file, 90);
 		fclose(destination_file);
